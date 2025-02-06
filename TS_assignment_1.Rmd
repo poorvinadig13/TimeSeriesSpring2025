@@ -1,0 +1,187 @@
+---
+title: "Time Series Assignment 1"
+author: "Poorvi Nadig"
+date: "2025-02-06"
+output: html_document
+---
+
+### Playing with Excel file in R
+
+
+```{r}
+setwd("~/Desktop/TimeSeries")
+employee_data <- read.csv("Typical_Employee_Survey_Data.csv")
+# head(employee_data)
+```
+
+
+```{r}
+colnames(employee_data) <- c( "Age", "Gender", "Job_Satisfaction", "Important_Job_Characteristic", "Years_Worked", "Promotion_Likelihood", "Decision_Making", 
+  "Budget_Participation", "Proud_of_Org", "Stay_for_Less_Pay", "Coworker_Relations"
+)
+```
+
+
+
+
+```{r}
+print(summary(employee_data$Age))
+boxplot(employee_data$Age, main = "Age Boxplot", ylab = "Age")
+# This box plot shows that the median age is mid 30's-early 40's. There are outliers above 60.
+print(summary(employee_data$Years_Worked))
+boxplot(employee_data$Years_Worked, main = "Boxplot of Years Worked", ylab = "Years Worked")
+# This box plot shows that most employees have worked for less than 10 years.
+
+```
+
+
+
+```{r}
+employee_data$Gender <- factor(employee_data$Gender, labels = c("Male", "Female"))
+employee_data$Job_Satisfaction <- factor(employee_data$Job_Satisfaction, labels = c("Very Satisfied", "Moderately Satisfied", "A Little Dissatisfied", "Very Dissatisfied"))
+employee_data$Important_Job_Characteristic <- factor(employee_data$Important_Job_Characteristic, labels = c("High Income", "No Danger of Being Fired", "Flexible Hours", "Opportunities for Advancement", "Enjoying the Work"))
+employee_data$Promotion_Likelihood <- factor(employee_data$Promotion_Likelihood, labels = c("Very Likely", "Likely", "Not Sure", "Unlikely", "Very Unlikely"))
+employee_data$Decision_Making <- factor(employee_data$Decision_Making, labels = c("Always", "Much of the Time", "Sometimes", "Never"))
+employee_data$Budget_Participation <- factor(employee_data$Budget_Participation, labels = c("Yes", "No"))
+employee_data$Proud_of_Org <- factor(employee_data$Proud_of_Org, labels = c("Very Proud", "Somewhat Proud", "Indifferent", "Not At All Proud"))
+employee_data$Stay_for_Less_Pay <- factor(employee_data$Stay_for_Less_Pay, labels = c("Very Likely", "Likely", "Not Sure", "Unlikely", "Very Unlikely"))
+employee_data$Coworker_Relations <- factor(
+  employee_data$Coworker_Relations,
+  labels = c("Very Good", "Good", "Bad", "Very Bad")
+)
+```
+
+
+```{r}
+employee_data$Gender <- factor(employee_data$Gender, labels = c("Male", "Female"))
+
+colors <- c("lightblue", "lightpink")
+
+pie(table(employee_data$Gender), 
+    main = "Gender Distribution", 
+    col = colors, 
+    labels = paste(names(table(employee_data$Gender)), "\n", table(employee_data$Gender)),
+    radius = 1)
+# This pie chart shows us the gender distribution. 69 employees are male and 52 employees are female.
+```
+
+
+```{r}
+employee_data$Budget_Participation <- factor(employee_data$Budget_Participation, labels = c("Yes", "No"))
+
+colors <- c("lightcoral", "green")
+
+pie(table(employee_data$Budget_Participation),
+    main = "Budget Participation Distribution",
+    col = colors,
+    labels = paste(names(table(employee_data$Budget_Participation)), "\n", table(employee_data$Budget_Participation)), radius = 1)
+# This pie chart shows us how many employees participate in budgeting decisions and how many do not. 
+```
+
+
+
+
+
+
+```{r}
+barplot(table(employee_data$Job_Satisfaction), 
+        main = "Job Satisfaction Levels", 
+        col = "lightblue", 
+        xlab = "Satisfaction Level", 
+        ylab = "Count")
+# This bar chart of Job Satisfaction Levels shows that the majority of employees are very satisfied (level 1) or moderately satisfied (level 2) with their jobs.
+```
+
+
+```{r}
+barplot(table(employee_data$Important_Job_Characteristic), 
+        main = "Important Job Characteristics", 
+        col = "lightgreen", 
+        xlab = "Job Characteristic", 
+        ylab = "Count")
+# This bar chart of Important Job Characteristics shows that the majority of employees value "Enjoying the Work" (category 5) the most, followed by "High Income" (category 1).
+```
+
+
+```{r}
+barplot(table(employee_data$Promotion_Likelihood), 
+        main = "Likelihood of Promotion", 
+        col = "lightcoral", 
+        xlab = "Promotion Likelihood", 
+        ylab = "Count")
+# This bar chart of Promotion Likelihood indicates that most employees feel "Very Unlikely" (category 5) or "Likely" (category 2 or 4) to be promoted in the next five years.
+
+```
+
+
+```{r}
+barplot(table(employee_data$Decision_Making), 
+        main = "Decision Making at Work", 
+        col = "gold", 
+        xlab = "Decision Making Level", 
+        ylab = "Count")
+#This bar chart of Decision Making at Work shows that most employees feel they are involved in decision-making "Much of the Time" (category 2) or "Sometimes" (category 3).
+```
+
+
+```{r}
+barplot(table(employee_data$Proud_of_Org), 
+        main = "Proud to Work for the Organization", 
+        col = "lightpink", 
+        xlab = "Pride Level", 
+        ylab = "Count")
+# This bar chart shows that most employees feel "Somewhat Proud" (category 2) or "Very Proud" (category 1) to work for the organization. 
+```
+
+
+```{r}
+barplot(table(employee_data$Stay_for_Less_Pay), 
+        main = "Would Stay for Less Pay", 
+        col = "lightcyan", 
+        xlab = "Likelihood", 
+        ylab = "Count")
+# The majority of employees fall into "Unlikely" (category 4) and "Likely" (category 2) groups, suggesting that employees are divided on whether they would stay for less pay.
+```
+
+
+```{r}
+barplot(table(employee_data$Coworker_Relations), 
+        main = "Workplace Relations with Coworkers", 
+        col = "lightgray", 
+        xlab = "Relationship Quality", 
+        ylab = "Count")
+#Most employees describe their relationships with coworkers as "Very Good" (category 1) or "Good" (category 2).
+```
+
+
+```{r}
+plot(employee_data$Age, employee_data$Years_Worked,
+     main = "Age vs. Years Worked",
+     xlab = "Age", ylab = "Years Worked",
+     pch = 19, col = "purple")
+# The scatter plot shows a positive correlation between age and years worked, meaning older employees generally have more years of experience.
+```
+
+
+```{r}
+plot(employee_data$Years_Worked, as.numeric(employee_data$Promotion_Likelihood),
+     main = "Years Worked vs. Likelihood of Promotion",
+     xlab = "Years Worked", ylab = "Promotion Likelihood",
+     pch = 19, col = "red")
+#This scatter plot suggests that promotion likelihood is spread across different experience levels, with no strong trend. 
+
+```
+
+
+```{r}
+plot(as.numeric(employee_data$Job_Satisfaction), as.numeric(employee_data$Stay_for_Less_Pay),
+     main = "Job Satisfaction vs. Willingness to Stay for Less Pay",
+     xlab = "Job Satisfaction", ylab = "Stay for Less Pay",
+     pch = 19, col = "green")
+# There is no pattern between job satisfaction and willingness to stay for less pay.
+```
+
+
+
+
+  
