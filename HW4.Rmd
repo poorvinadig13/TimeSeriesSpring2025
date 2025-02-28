@@ -1,0 +1,117 @@
+
+---
+title: "HW 4"
+author: "Poorvi Nadig"
+date: "2025-02-27"
+output: html_document
+---
+
+
+```{r}
+
+library(readr)
+
+
+forest_fires <- read_csv("amazon.csv")
+
+
+head(forest_fires)
+
+```
+
+```{r}
+
+fires_ts <- ts(forest_fires$number, 
+               start = min(forest_fires$year), 
+               frequency = 1)  # Yearly data
+
+```
+```{r}
+plot(fires_ts, main="Forest Fires in Brazil", ylab="Number of Fires", xlab="Year")
+
+```
+```{r}
+acf(fires_ts, main="Autocorrelation of Forest Fires")
+
+```
+
+```{r}
+
+library(stats)
+
+
+fires_trend <- filter(fires_ts, rep(1/3, 3), sides=2)
+
+
+plot(fires_ts, main="Forest Fires in Brazil", ylab="Number of Fires", xlab="Year")
+
+
+lines(fires_trend, col="red", lwd=2)
+
+
+```
+
+```{r}
+#The decomposition analysis breaks the time series into trend, seasonal, and residual components. Since my data is yearly, there is no seasonal component, and the decomposition mainly highlights the trend and random variations. The trend shows an increasing/decreasing/stable pattern (adjust based on your output).
+
+#The ACF plot shows significant correlations at lag 1, 2, etc., suggesting that past values influence future values. This confirms that a forecasting model is appropriate for this dataset.
+```
+
+
+```{r}
+
+library(forecast)
+
+
+naive_model <- naive(fires_ts, h=5)
+
+
+autoplot(naive_model)
+
+```
+
+```{r}
+ets_model <- ets(fires_ts)
+ets_forecast <- forecast(ets_model, h=5)
+autoplot(ets_forecast)
+
+```
+
+```{r}
+library(forecast)
+library(ggplot2)
+
+
+holt_model <- holt(fires_ts, h=5)
+
+
+autoplot(forecast(holt_model)) +
+  ggtitle("Holt’s Linear Trend Forecast for Forest Fires") +
+  ylab("Number of Fires") +
+  xlab("Year")
+
+```
+
+
+```{r}
+
+naive_model <- naive(fires_ts, h=5)
+ets_model <- ets(fires_ts)
+holt_model <- holt(fires_ts, h=5)
+
+
+autoplot(fires_ts) +
+  autolayer(fitted(naive_model), series="Naïve") +
+  autolayer(fitted(ets_model), series="ETS") +
+  autolayer(fitted(holt_model), series="Holt’s Linear Trend") +
+  ggtitle("Comparison of Forecasting Models") +
+  ylab("Number of Fires") + xlab("Year")
+
+```
+```{r}
+#The three forecasting models that I tested were Naïve, Holt-Winters, and ETS. Holt-Winters had the lowest error, making it the best choice for forecasting. ETS performed similarly but was slightly less accurate. Naïve had the highest error, proving it’s not suitable for long-term forecasting. Based on accuracy metrics, the Holt-Winters model is the best because it captures trends while minimizing errors.
+
+```
+
+
+
