@@ -1,0 +1,238 @@
+---
+title: "Midterm Practice"
+author: "Poorvi Nadig"
+date: "2025-03-03"
+output: html_document
+---
+
+
+```{r}
+
+library(fpp2)
+
+
+
+data("arrivals")
+
+
+head("arrivals")
+
+us_aus_arrivals <- arrivals[, 4]
+
+
+autoplot(us_aus_arrivals) + 
+  ggtitle("US to Australia Arrivals") + 
+  ylab("Number of Arrivals") + 
+  xlab("Year")
+
+```
+```{r}
+# My observations for this time series plot is that there is a clear upward trend. This also shows a trend with a jump in arrivals at the end/start of the year. 
+```
+
+```{r}
+
+summary(us_aus_arrivals)
+
+```
+
+```{r}
+
+boxplot(us_aus_arrivals, main="Boxplot of US to Australia Arrivals",
+        ylab="Number of Arrivals")
+
+```
+
+
+```{r}
+# For this boxplot and the summary stats, it shows that the distribution is fairly balanced. The box plot also shows that there is a moderate spread through the data with no extreme outliers. This basically means that arrivals have changed pretty evenly in an upward trend throughout the years. 
+```
+
+```{r}
+
+decomposed <- decompose(us_aus_arrivals)
+
+
+autoplot(decomposed)
+
+
+```
+```{r}
+
+decomposed <- decompose(us_aus_arrivals)
+decomposed$seasonal
+
+```
+
+
+```{r}
+ggsubseriesplot(us_aus_arrivals) + 
+  ggtitle("Quarterly Seasonal Plot of US to Australia Arrivals") +
+  ylab("Number of Arrivals")
+```
+
+```{r}
+# The time series is seasonal and additive.
+# Q1 and Q4 have the highest arrivals, likely due to holidays and peak travel seasons.
+# Q2 has the lowest arrivals, likely due to off-season travel trends.
+# Seasonality significantly affects the data, as seen in the decomposition plot.
+```
+
+```{r}
+
+autoplot(seasadj(decomposed)) + 
+  ggtitle("Seasonally Adjusted US to Australia Arrivals")
+
+```
+```{r}
+
+library(ggplot2)
+
+decomposed_stl <- stl(us_aus_arrivals, s.window="periodic")
+
+
+seasonally_adjusted <- seasadj(decomposed_stl)
+
+
+autoplot(us_aus_arrivals, series="Actual", color="blue") +
+  autolayer(seasonally_adjusted, series="Seasonally Adjusted", color="red") +
+  ggtitle("Actual vs. Seasonally Adjusted US to Australia Arrivals") +
+  ylab("Number of Arrivals") +
+  xlab("Year") +
+  guides(colour=guide_legend(title="Series")) +
+  theme_minimal()
+
+
+```
+```{r}
+# There aren't any big fluctuations- the seaosnality is constant due to holdiay time and weather I am assuming
+```
+
+
+```{r}
+
+library(fpp2)
+
+
+naive_forecast <- naive(us_aus_arrivals, h=12)
+
+
+autoplot(naive_forecast) +
+  ggtitle("Naïve Forecast for US to Australia Arrivals") +
+  ylab("Number of Arrivals") +
+  xlab("Year")
+
+```
+```{r}
+# The forecast assumes that future values remain constant at the last observed value which is why there is a horizontal blue line. The blue shaded area represents prediction intervals; the dark blue is showing the 50% CI and the lighter blue part shows the 95% CI. The uncertainty widens over time which means the more time goes on, the less certain we can be.
+```
+
+
+```{r}
+
+autoplot(naive_forecast$residuals) +
+  ggtitle("Residuals from Naïve Forecast")
+
+```
+```{r}
+# There are clear patterns in the residuals, meaning that the Naïve method is not capturing important structures in the data. Some periods have large positive and negative residuals, indicating that the forecast underestimates or overestimates arrivals in certain years. The residuals appear to have a repeating pattern, suggesting that the Naïve method does not account for the seasonal component of the time series. 
+
+```
+
+
+```{r}
+
+hist(naive_forecast$residuals, breaks=20, main="Histogram of Residuals",
+     xlab="Residuals", col="gray", border="black")
+
+```
+```{r}
+# The residuals are approximately centered around zero. The distribution is roughly symmetric but slightly spread out, indicating some variability in forecast errors. There is no extreme skewness, meaning that the forecast errors are somewhat balanced between overestimation and underestimation. 
+```
+
+```{r}
+
+
+fitted_values <- as.numeric(fitted(naive_forecast))
+residuals <- as.numeric(naive_forecast$residuals)
+
+
+plot(fitted_values, residuals, 
+     xlab="Fitted Values", ylab="Residuals", 
+     main="Fitted Values vs Residuals",
+     pch=16, col="blue")
+
+
+abline(h=0, col="red", lwd=2)
+
+
+```
+```{r}
+#No clear trend or pattern, meaning that residuals are randomly distributed, which is a good sign for model assumptions. Residuals are scattered around zero, which suggests that the model does not have a strong bias. 
+```
+
+
+```{r}
+
+
+actual_values <- as.numeric(us_aus_arrivals)
+residuals <- as.numeric(naive_forecast$residuals)
+
+
+plot(actual_values, residuals, 
+     xlab="Actual Values", ylab="Residuals", 
+     main="Actual Values vs Residuals",
+     pch=16, col="blue")
+
+abline(h=0, col="red", lwd=2)
+
+
+```
+```{r}
+# The model does not have a major bias, since the red line is relatively flat. Higher actual values have larger residuals, meaning the forecast is less reliable for high arrival counts.Possible missing seasonality, since the residuals still show some structure. 
+```
+
+```{r}
+
+Acf(naive_forecast$residuals, main="ACF of Residuals")
+
+```
+```{r}
+# Most lags are within the blue dashed confidence bands, suggesting that the residuals do not show strong autocorrelation at most lags 
+```
+
+```{r}
+
+accuracy(naive_forecast)
+
+```
+
+```{r}
+
+library(forecast)
+
+
+future_forecast <- forecast(naive_forecast, h=4)
+
+
+print(future_forecast)
+
+autoplot(future_forecast) +
+  ggtitle("Naïve Forecast for Next Year (US to Australia Arrivals)") +
+  ylab("Number of Arrivals") +
+  xlab("Year")
+
+
+```
+
+```{r}
+
+accuracy(naive_forecast)
+
+```
+```{r}
+#The MAPE (Mean Absolute Percentage Error) is around 6.2%, which suggests moderate forecasting accuracy. 
+# It predicts arrivals to remain roughly at the last observed value.
+# Holt-Winters (ETS(A,A,A)) → Uses α (level), β (trend), and γ (seasonality) for improved accuracy.
+```
+
