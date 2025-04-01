@@ -1,0 +1,45 @@
+```{r}
+library(forecast)
+library(tseries)
+```
+
+```{r}
+data <- read.csv("amazon.csv")
+str(data)
+```
+```{r}
+colnames(data)
+head(data)
+```
+
+
+```{r}
+data$date <- as.Date(data$date, format = "%Y-%m-%d")
+ts_data <- ts(data$number, start = c(1998, 1), frequency = 12)
+```
+
+```{r}
+model <- auto.arima(ts_data)
+summary(model)
+
+```
+```{r}
+#The ARIMA(5,0,1) model means it used 5 past values and 1 past error to make predictions. The model found an average value around 108 and gave a good fit overall. Some accuracy numbers like RMSE and MAE look reasonable, but MAPE is infinite, which might be because there are zero values in the data.
+```
+
+```{r}
+checkresiduals(model)
+```
+```{r}
+forecasted <- forecast(model, h=5)
+
+
+plot(forecasted)
+
+```
+
+```{r}
+accuracy(model)
+
+```
+
